@@ -73,5 +73,5 @@ app.post('/evaluar', upload.single('imagen'), async (req, res) => {
 });
 
 app.listen(3000, () => {
-    console.log("✅ Servidor activo en http://localhost:4200");
+    console.log("✅ Servidor activo en http://localhost:3000");
 });

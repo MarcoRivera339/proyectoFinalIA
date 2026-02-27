@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EvaluatorComponent } from './evaluator/evaluator.component'; // Verifica que termine en 't'
+import { EvaluatorComponent } from './evaluator/evaluator.component';
 
 @Component({
   selector: 'app-root',
