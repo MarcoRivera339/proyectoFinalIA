@@ -1,0 +1,78 @@
+<div class="main-container">
+  <div class="card">
+    <h2 class="title">🧮 Asistente de Evaluación Matemática</h2>
+    <p class="subtitle">Basado en lógica de entrenamiento GPT-4o</p>
+
+    <div class="form-group">
+      <label for="fileInput">📷 Subir foto del ejercicio:</label>
+      <input 
+        type="file" 
+        id="fileInput"
+        (change)="onFileSelected($event)" 
+        accept="image/*"
+        class="input-file"
+      >
+      <p *ngIf="selectedFile" class="file-success">
+        ✅ Archivo detectado: <strong>{{ selectedFile.name }}</strong>
+      </p>
+    </div>
+
+    <div class="preview-container" *ngIf="imagePreview">
+      <img [src]="imagePreview" alt="Vista previa del examen" class="preview-img">
+    </div>
+
+    <div class="form-group">
+      <label for="instructions">📝 Enunciado y Ponderación:</label>
+      <textarea 
+        id="instructions"
+        [(ngModel)]="instructions" 
+        placeholder="Ej: Resolver matriz A(A-B)^2. Valor: 5 puntos."
+        class="textarea-input">
+      </textarea>
+    </div>
+
+    <button 
+      (click)="analizarExamen()" 
+      [disabled]="loading"
+      [class.btn-loading]="loading"
+      class="btn-primary">
+      <span *ngIf="!loading">🚀 Calificar con IA</span>
+      <span *ngIf="loading">🤖 Procesando razonamiento...</span>
+    </button>
+
+    <div *ngIf="resultado" class="results-container">
+      <div class="result-header">
+        <h3>📊 Reporte Final</h3>
+        <div class="score-badge">
+          {{ resultado?.total_score }} / {{ resultado?.max_score }}
+        </div>
+      </div>
+
+      <p class="general-feedback">
+        <strong>Comentario General:</strong> {{ resultado?.general_feedback }}
+      </p>
+
+      <hr>
+
+      <div *ngFor="let ex of resultado?.exercises" class="exercise-card">
+        <h4>Respuesta detectada:</h4>
+        <p class="student-ans">{{ ex.student_answer }}</p>
+        
+        <h5>👣 Desglose de pasos:</h5>
+        <div *ngFor="let paso of ex.steps" class="step-item" [class.step-error]="!paso.is_correct">
+          <div class="step-title">
+            <strong>Paso {{ paso.step_number }}:</strong> 
+            <span>{{ paso.is_correct ? '✅ Correcto' : '❌ Error detectado' }}</span>
+          </div>
+          <p class="step-desc">"{{ paso.student_step }}"</p>
+          <p class="step-feedback"><em>💡 {{ paso.feedback }}</em></p>
+        </div>
+
+        <div class="exercise-footer">
+          <span>Puntos Procedimiento: {{ ex.procedure_score }}</span>
+          <span><strong>Total: {{ ex.total_score }}</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
