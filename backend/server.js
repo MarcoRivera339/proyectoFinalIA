@@ -50,7 +50,7 @@ app.post('/evaluar', upload.single('imagen'), async (req, res) => {
         const imagenBase64 = req.file.buffer.toString("base64");
 
         const response = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: "gpt-5.2",
             messages: [
                 { role: "system", content: systemPrompt },
                 {
