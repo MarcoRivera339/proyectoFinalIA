@@ -7,15 +7,19 @@ import { Observable } from 'rxjs';
 })
 export class EvaluadorService {
  
-  private apiUrl = 'http://localhost:3000/evaluar';
+  private apiUrl = 'http://localhost:3000/evaluar-chat';
 
   constructor(private http: HttpClient) { }
 
-  enviarExamen(imagen: File, instrucciones: string): Observable<any> {
+  enviarAlChat(instrucciones: string, imagenes: File[]): Observable<any> {
     const formData = new FormData();
-    formData.append('imagen', imagen);
     formData.append('instrucciones', instrucciones);
 
-    return this.http.post(this.apiUrl, formData);
+    //Agregamos todas las imágenes cargadas al FormData
+    imagenes.forEach(img => {
+      formData.append('imagenes', img);
+    });
+
+    return this.http.post<any>(this.apiUrl, formData);
   }
 }

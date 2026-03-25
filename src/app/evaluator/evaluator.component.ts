@@ -11,52 +11,48 @@ import { EvaluadorService } from '../services/evaluador.service';
   styleUrls: ['./evaluator.component.css']
 })
 export class EvaluatorComponent {
-  selectedFile: File | null = null;
-  imagePreview: any = null;
-  instructions: string = '';
-  resultado: any = null; 
+  nuevoMensaje: string = '';
+  imagenesSeleccionadas: File[] = [];
+  historial: any[] = []; 
   loading: boolean = false;
+  isDarkMode: boolean = false;
 
   constructor(private evaluadorService: EvaluadorService) {}
 
-  onFileSelected(event: any) {
-  const input = event.target as HTMLInputElement;
-
-  if (input.files && input.files.length > 0) {
-    this.selectedFile = input.files[0];
-    
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.imagePreview = reader.result;
-    };
-    reader.readAsDataURL(this.selectedFile);
-
-    console.log("✅ Archivo cargado con éxito:", this.selectedFile.name);
-  } else {
-    console.warn("⚠️ No se seleccionó ningún archivo");
+  toggleDarkMode(){
+    this.isDarkMode = !this.isDarkMode;
   }
-}
 
-  analizarExamen() {
-    this.resultado = null;
+  onFileSelected(event: any) {
+    this.imagenesSeleccionadas = Array.from(event.target.files);
+  }
+
+  enviarMensaje(){
+    if (this.imagenesSeleccionadas.length === 0 && !this.nuevoMensaje) return;
     this.loading = true;
-    if (!this.selectedFile){
-      alert("Error: No detecto el archivo en la variable");
-      return;
-    }
+    this.historial.push({ 
+      emisor: 'usuario', 
+      texto: this.nuevoMensaje, 
+      cantImagenes: this.imagenesSeleccionadas.length });
 
-    this.loading = true;
+    this.evaluadorService.enviarAlChat(this.nuevoMensaje, this.imagenesSeleccionadas).subscribe({
+      next: (res) => {
+        this.historial.push({
+          emisor: 'ia',
+          texto: res.evaluacion.general_feedback,
+          soluciones: res.evaluacion.exercises
+        });
+        this.loading = false;
+        this.limpiarInputs();
+      },
+      error: () => { alert("Error de conexión"); this.loading = false; }
+    });
+  }
 
-    this.evaluadorService.enviarExamen(this.selectedFile, this.instructions)
-      .subscribe({
-        next: (response: any) => {
-          this.resultado = response.evaluacion; 
-          this.loading = false;
-        },
-        error: (err) => {
-          console.error(err);
-          this.loading = false;
-        }
-      });
+  limpiarInputs(){
+    this.nuevoMensaje = '';
+    this.imagenesSeleccionadas = [];
+    const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   }
 }

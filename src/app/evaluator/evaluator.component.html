@@ -1,78 +1,63 @@
-<div class="main-container">
-  <div class="card">
-    <h2 class="title">🧮 Asistente de Evaluación Matemática</h2>
-    <p class="subtitle">Basado en lógica de entrenamiento GPT-4o</p>
+<div class="app-container" [class.dark-mode]="isDarkMode">
+  <button class="theme-btn" (click)="toggleDarkMode()">
+    <i [class]="isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+  </button>
 
-    <div class="form-group">
-      <label for="fileInput">📷 Subir foto del ejercicio:</label>
-      <input 
-        type="file" 
-        id="fileInput"
-        (change)="onFileSelected($event)" 
-        accept="image/*"
-        class="input-file"
-      >
-      <p *ngIf="selectedFile" class="file-success">
-        ✅ Archivo detectado: <strong>{{ selectedFile.name }}</strong>
-      </p>
-    </div>
+  <main class="content-area">
+    <header class="minimal-header">
+      <h1>Tutor Inteligente</h1>
+      <p>Análisis Multimodal Activo</p>
+    </header>
 
-    <div class="preview-container" *ngIf="imagePreview">
-      <img [src]="imagePreview" alt="Vista previa del examen" class="preview-img">
-    </div>
-
-    <div class="form-group">
-      <label for="instructions">📝 Enunciado y Ponderación:</label>
-      <textarea 
-        id="instructions"
-        [(ngModel)]="instructions" 
-        placeholder="Ej: Resolver matriz A(A-B)^2. Valor: 5 puntos."
-        class="textarea-input">
-      </textarea>
-    </div>
-
-    <button 
-      (click)="analizarExamen()" 
-      [disabled]="loading"
-      [class.btn-loading]="loading"
-      class="btn-primary">
-      <span *ngIf="!loading">🚀 Calificar con IA</span>
-      <span *ngIf="loading">🤖 Procesando razonamiento...</span>
-    </button>
-
-    <div *ngIf="resultado" class="results-container">
-      <div class="result-header">
-        <h3>📊 Reporte Final</h3>
-        <div class="score-badge">
-          {{ resultado?.total_score }} / {{ resultado?.max_score }}
-        </div>
-      </div>
-
-      <p class="general-feedback">
-        <strong>Comentario General:</strong> {{ resultado?.general_feedback }}
-      </p>
-
-      <hr>
-
-      <div *ngFor="let ex of resultado?.exercises" class="exercise-card">
-        <h4>Respuesta detectada:</h4>
-        <p class="student-ans">{{ ex.student_answer }}</p>
-        
-        <h5>👣 Desglose de pasos:</h5>
-        <div *ngFor="let paso of ex.steps" class="step-item" [class.step-error]="!paso.is_correct">
-          <div class="step-title">
-            <strong>Paso {{ paso.step_number }}:</strong> 
-            <span>{{ paso.is_correct ? '✅ Correcto' : '❌ Error detectado' }}</span>
+    <section class="chat-feed" #scrollContainer>
+      <div *ngFor="let msg of historial" [ngClass]="msg.emisor === 'usuario' ? 'user-entry' : 'ia-entry'">
+        <div class="message-content">
+          <p class="text">{{ msg.texto }}</p>
+          
+          <div class="report-grid" *ngIf="msg.soluciones">
+            <article *ngFor="let sol of msg.soluciones" class="minimal-report">
+              <div class="report-top">
+                <span class="report-id">Reporte #{{ sol.exercise_id }}</span>
+                <span class="report-score">{{ sol.total_score }}/{{ sol.max_score }}</span>
+              </div>
+              
+              <div class="report-body">
+                <p class="general-feedback">{{ sol.feedback }}</p>
+                
+                <div class="steps-flow">
+                  <div *ngFor="let paso of sol.steps" class="step-card" [class.error-step]="!paso.is_correct">
+                    <div class="step-indicator">
+                      <i [class]="paso.is_correct ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                      <span>Paso {{ paso.step_number }}</span>
+                    </div>
+                    <code>{{ paso.student_step }}</code>
+                    <p class="step-hint">{{ paso.feedback }}</p>
+                  </div>
+                </div>
+              </div>
+            </article>
           </div>
-          <p class="step-desc">"{{ paso.student_step }}"</p>
-          <p class="step-feedback"><em>💡 {{ paso.feedback }}</em></p>
-        </div>
-
-        <div class="exercise-footer">
-          <span>Puntos Procedimiento: {{ ex.procedure_score }}</span>
-          <span><strong>Total: {{ ex.total_score }}</strong></span>
         </div>
       </div>
-    </div>
-  </div>
+      <div *ngIf="loading" class="minimal-loader">Analizando datos...</div>
+    </section>
+
+    <footer class="input-section">
+      <div class="minimal-input-bar">
+        <label for="fileInput" class="action-icon" title="Adjuntar">
+          <i class="fas fa-paperclip"></i>
+          <input type="file" id="fileInput" (change)="onFileSelected($event)" multiple hidden>
+        </label>
+        
+        <textarea [(ngModel)]="nuevoMensaje" placeholder="Pregunta algo..." rows="1" (keyup.enter)="enviarMensaje()"></textarea>
+        
+        <button (click)="enviarMensaje()" [disabled]="loading" class="action-icon send-btn">
+          <i class="fas fa-arrow-up"></i>
+        </button>
+      </div>
+      <div class="file-counter" *ngIf="imagenesSeleccionadas.length > 0">
+        {{ imagenesSeleccionadas.length }} imágenes seleccionadas
+      </div>
+    </footer>
+  </main>
 </div>
