@@ -1,182 +1,186 @@
-/* --- Variables y Reset General --- */
 :host {
-  --bg-main: #131314;       /* Fondo de la aplicación (Casi negro) */
-  --bg-card: #1e1e20;       /* Fondo de la tarjeta y sidebar (Gris oscuro) */
-  --text-main: #e3e3e3;     /* Texto principal (Blanco apagado) */
-  --neon-blue: #0b57d0;     /* Azul Neón base */
-  --neon-glow: #0b57d080;   /* Brillo neón con opacidad */
-  --border-neon: #3373cd;   /* Borde neón más claro */
+  --bg-main: #0a0a0b;
+  --bg-card: #161618;
+  --neon-blue: #0b57d0;
+  --text: #e3e3e3;
+  --neon-glow: rgba(11, 87, 208, 0.3);
 }
 
-/* Estilo para el contenedor que engloba todo */
-.app-layout {
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  background-color: var(--bg-main);
-  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  color: var(--text-main);
-  overflow: hidden;
-}
+.app-layout { display: flex; height: 100vh; background: var(--bg-main); color: var(--text); overflow: hidden; position: relative; }
 
-/* --- SIDEBAR IZQUIERDO --- */
+/* SIDEBAR DRAWER (No fijo) */
 .sidebar {
-  width: 260px;
-  background-color: var(--bg-card);
+  width: 260px; height: 100%; background: var(--bg-card);
+  position: absolute; left: 0; z-index: 1000; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-right: 1px solid #333; padding: 15px;
+}
+.sidebar-closed .sidebar { transform: translateX(-100%); }
+
+/* MAIN CONTENT */
+.main-content {
+  flex: 1; width: 100%; height: 100%; display: flex; flex-direction: column;
+  transition: padding-left 0.3s ease;
+}
+.app-layout:not(.sidebar-closed) .main-content { padding-left: 260px; }
+
+/* CHAT WINDOW (Scroll interno) */
+.chat-window {
+  flex: 1; overflow-y: auto; padding: 20px 10%;
+  display: flex; flex-direction: column; gap: 20px;
+}
+
+/* IMÁGENES QUE NO SE SALEN */
+.img-fluid, .img-report {
+  max-width: 100%; height: auto; border-radius: 12px;
+  border: 1px solid var(--neon-blue); box-shadow: 0 0 15px var(--neon-glow);
+  margin-top: 10px;
+}
+
+/* TÍTULO CENTRADO */
+.top-nav { height: 64px; display: flex; align-items: center; border-bottom: 1px solid #333; padding: 0 20px; }
+.nav-side { flex: 1; }
+.nav-center { flex: 2; text-align: center; }
+.nav-center h1 { font-family: 'Georgia', serif; font-size: 1.6rem; color: white; margin: 0; }
+
+/* INPUT NEÓN */
+.neon-input-bar {
+  display: flex; align-items: center; background: #1e1e20; border-radius: 30px;
+  padding: 8px 20px; margin: 0 auto 30px; width: 80%;
+  border: 1px solid var(--neon-blue); box-shadow: 0 0 15px var(--neon-glow);
+}
+textarea { flex: 1; background: transparent; border: none; color: white; outline: none; resize: none; font-size: 1rem; }
+.icon-button { background: none; border: none; color: var(--neon-blue); cursor: pointer; font-size: 1.3rem; }
+
+.new-chat-btn {
+  background-color: rgba(255, 255, 255, 0.05); /* Fondo blanco casi transparente */
+  backdrop-filter: blur(5px); /* Desenfoque de fondo (vidrio) */
+  -webkit-backdrop-filter: blur(5px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Borde sutil */
+  border-radius: 16px;
+  padding: 12px 24px;
   display: flex;
-  flex-direction: column;
-  padding: 15px;
-  border-right: 1px solid #3c4043;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s, border 0.2s;
+}
+
+.new-chat-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Se vuelve un poco más sólido */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.new-chat-btn i {
+  color: #4a8cf5; /* Solo el icono es azul */
 }
 
 .sidebar-header {
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 30px;
+  justify-content: space-between; /* Esto empuja el botón a la derecha */
+  padding: 10px 5px;
+  margin-bottom: 20px;
 }
 
-/* Botón "Nuevo Chat" con el degradado azul de la imagen */
 .new-chat-btn {
-  flex: 1;
+  /* Si quieres que el botón no ocupe todo el ancho, quita 'width: 100%' */
   background: linear-gradient(135deg, #2a73e8 0%, #1a57b0 100%);
   color: white;
   border: none;
-  border-radius: 24px;
-  padding: 12px 20px;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  white-space: nowrap; /* Evita que el texto se parta en dos líneas */
 }
 
 .new-chat-btn:hover {
-  box-shadow: 0 0 12px var(--neon-glow);
+  box-shadow: 0 0 12px rgba(42, 115, 232, 0.5);
+  transform: translateY(-1px);
 }
 
-.chat-history-list {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Ítem del historial con el brillo azul al hacer hover */
-.history-item {
-  padding: 10px 15px;
-  border-radius: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+/* Ajuste opcional para el icono de la hamburguesa dentro del sidebar */
+.sidebar .icon-button {
   color: #c4c7c5;
-}
-
-.history-item:hover, .history-item.active {
-  background-color: rgba(11, 87, 208, 0.1);
-  color: #a1c2fa;
-  box-shadow: inset 0 0 8px rgba(11, 87, 208, 0.2);
-}
-
-.history-item i {
-  color: var(--neon-blue);
-  opacity: 0.8;
-}
-
-/* --- CONTENIDO PRINCIPAL --- */
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-.top-nav {
-  padding: 15px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* Título con la tipografía serif de la imagen */
-.top-nav h1 {
-  font-family: 'Georgia', serif; 
-  font-size: 1.6rem;
-  font-weight: normal;
-  color: white;
-}
-
-.theme-btn {
-  background-color: #3c4043;
-  color: var(--neon-blue);
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 10px var(--neon-glow);
-}
-
-/* --- BARRA DE ENTRADA (Estilo Píldora Neón) --- */
-.input-section {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 20px 40px;
-  background: linear-gradient(0deg, var(--bg-main) 70%, transparent 100%);
-}
-
-.neon-input-bar {
-  background-color: var(--bg-main);
-  border: 1px solid var(--border-neon);
-  border-radius: 32px;
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 0 20px -2px var(--neon-glow), 
-              0 0 6px -1px var(--neon-glow) inset;
-  transition: box-shadow 0.3s;
-}
-
-.neon-input-bar:focus-within {
-  box-shadow: 0 0 25px -1px var(--neon-blue), 
-              0 0 10px -2px var(--neon-blue) inset;
-}
-
-textarea {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: 1.05rem;
-  padding: 12px 0;
-  resize: none;
-  outline: none;
-}
-
-textarea::placeholder {
-  color: #7d7d7d;
-  font-family: 'Consolas', 'Monaco', monospace; /* Estilo terminal para el placeholder */
-}
-
-.icon-button {
+  font-size: 1.2rem;
   background: none;
   border: none;
-  color: var(--neon-blue);
-  font-size: 1.4rem;
   cursor: pointer;
-  opacity: 0.9;
-  transition: opacity 0.2s, color 0.2s;
+  padding: 10px;
 }
 
-.icon-button:hover {
-  opacity: 1;
-  color: #4a8cf5;
+/* --- Estilos Generales para el Chat --- */
+.bubble {
+  max-width: 80%; /* El mensaje no ocupa todo el ancho */
+  padding: 15px;
+  border-radius: 15px;
+  margin-bottom: 10px;
+}
+
+.ia-box .bubble {
+  background-color: #1e1e20;
+  color: #e3e3e3;
+  border-left: 3px solid #0b57d0; /* Acento azul a la izquierda */
+}
+
+/* --- CONTROL DE TAMAÑO DE IMÁGENES (La Clave) --- */
+/* Forzamos a que las miniaturas en los mensajes sean pequeñas */
+.previsualizacion-input-grid img, 
+.soluciones-grid .reporte-card img {
+  max-width: 150px; /* Tamaño pequeño fijo para el chat */
+  max-height: 150px;
+  object-fit: contain; /* No deforma la imagen */
+  border-radius: 10px;
+  border: 1px solid #3373cd; /* Borde azul neón */
+  box-shadow: 0 0 10px rgba(11, 87, 208, 0.4); /* Brillo sutil */
+  margin: 10px 0;
+  cursor: pointer; /* Indica que se puede ampliar (opcional) */
+  transition: transform 0.2s;
+}
+
+.previsualizacion-input-grid img:hover {
+  transform: scale(1.05); /* Efecto de zoom suave */
+}
+
+/* --- Estilos para la Solución Paso a Paso --- */
+.reporte-card h3 {
+  font-family: 'Georgia', serif;
+  border-bottom: 1px solid #3c4043;
+  padding-bottom: 5px;
+}
+
+.steps-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.step-item {
+  background-color: #131314;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 2px solid #0b57d0;
+}
+
+.step-header {
+  font-weight: bold;
+  color: #a1c2fa;
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.math-code {
+  font-family: 'Consolas', monospace;
+  color: #e3e3e3;
+  background: #000;
+  padding: 5px;
+  border-radius: 4px;
 }

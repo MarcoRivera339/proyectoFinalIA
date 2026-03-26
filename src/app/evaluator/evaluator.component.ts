@@ -23,6 +23,13 @@ export class EvaluadorComponent {
 
   constructor(private evaluadorService: EvaluadorService) {}
 
+  nuevoChat() {
+    this.historial = []; // Limpia el chat actual
+    this.nuevoMensaje = ''; // Limpia el texto de entrada
+    this.imagenesSeleccionadas = []; // Limpia las imágenes
+    console.log("Iniciando nueva sesión de estudio...");
+  }
+
   toggleSidebar() { this.isSidebarOpen = !this.isSidebarOpen; }
   toggleDarkMode() { this.isDarkMode = !this.isDarkMode; }
 

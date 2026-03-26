@@ -10,14 +10,12 @@ const app = express();
 app.use(cors());
 app.use(express.json()); 
 
-// Configuración de multer para soportar hasta 10 imágenes en memoria
-const upload = multer({ storage: multer.memoryStorage() }); 
+const upload = multer({storage: multer.memoryStorage()}); 
 
 const openai = new OpenAI({
     apiKey: process.env.PROYECT_API_KEY
 });
 
-// Instrucciones para el evaluador (System Prompt)
 const systemPrompt = `
 You are an expert Autonomous Grading Agent specialized in Mathematics and Linear Algebra.
 Your goal is to analyze handwritten solutions from images, compare them against canonical mathematical procedures, and generate a structured pedagogical report.
@@ -60,34 +58,31 @@ You MUST respond strictly in a valid JSON object with the following structure:
 - If multiple images are provided, analyze them as separate exercises within the "exercises" array.
 `;
 
-// Ruta para que el Chatbot acepte varias imágenes
 app.post('/evaluar-chat', upload.array('imagenes', 10), async (req, res) => {
     try {
         const { instrucciones } = req.body;
         const archivos = req.files;
 
-        if (!archivos || archivos.length === 0) {
-            return res.status(400).json({ error: "Error en la carga de imágenes" });
+        if (!archivos || archivos.length === 0){
+            return res.status(400).json({error: "Error en la carga de imágenes"});
         }
 
-        // Mapeo de imágenes a Base64 para la API
         const contenidoImagenes = archivos.map(file => ({
             type: "image_url",
             image_url: {
                 url: `data:image/jpeg;base64,${file.buffer.toString("base64")}`,
                 detail: "low"
             }
-        }));
+        }))
 
-        // Construcción de mensajes multimodal - CORREGIDO MODELO A gpt-4o
         const response = await openai.chat.completions.create({
-            model: "gpt-4o", 
+            model: "gpt-4o", // Mantengo el que tenías
             messages: [
                 { role: "system", content: systemPrompt },
                 {
                     role: "user",
                     content: [
-                        { type: "text", text: instrucciones || "Analiza estos ejercicios" },
+                        { type: "text", text: instrucciones || "Analiza estos ejercicios"},
                         ...contenidoImagenes
                     ]
                 }
@@ -96,7 +91,6 @@ app.post('/evaluar-chat', upload.array('imagenes', 10), async (req, res) => {
             response_format: { type: "json_object" }
         });
 
-        // Enviar la evaluación parseada
         res.json({ evaluacion: JSON.parse(response.choices[0].message.content) });
     } catch (error) {
         console.error("Error en OpenAI:", error);

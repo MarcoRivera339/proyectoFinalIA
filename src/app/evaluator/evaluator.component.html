@@ -1,48 +1,68 @@
-<div class="app-layout">
+<div class="app-layout" [class.sidebar-closed]="!isSidebarOpen">
+  
   <aside class="sidebar">
     <div class="sidebar-header">
-      <button class="icon-button"><i class="fas fa-bars"></i></button>
+      <button class="icon-button" (click)="toggleSidebar()"><i class="fas fa-bars"></i></button>
       <button class="new-chat-btn" (click)="nuevoChat()">
-        <i class="fas fa-plus"></i>
-        <span>Nuevo Chat</span>
+        <i class="fas fa-plus"></i> <span>Nuevo Chat</span>
       </button>
     </div>
-
     <div class="chat-history-list">
       <div class="history-item" *ngFor="let chat of chatsGuardados">
-        <i class="far fa-comment-alt"></i>
-        <span>{{ chat.titulo }}</span>
+        <i class="far fa-comment-alt"></i> <span>{{ chat.titulo }}</span>
       </div>
     </div>
   </aside>
 
   <main class="main-content">
     <header class="top-nav">
-      <h1>Tutor Inteligente</h1>
-      <button class="theme-btn" (click)="toggleDarkMode()">
-        <i class="fas fa-moon"></i>
-      </button>
+      <div class="nav-side">
+        <button class="icon-button floating-menu-btn" *ngIf="!isSidebarOpen" (click)="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+
+      <div class="nav-center">
+        <h1>Evaluador Matemático 📚</h1>
+      </div>
+
+      <div class="nav-side">
+        </div>
     </header>
 
     <div class="chat-window">
+      <div *ngFor="let msg of historial" [ngClass]="msg.emisor === 'usuario' ? 'user-box' : 'ia-box'">
+        <div class="bubble">
+          <p class="message-text">{{ msg.texto }}</p>
+          
+          <div class="user-thumbs-grid" *ngIf="msg.previsualizaciones && msg.emisor === 'usuario'">
+            <img *ngFor="let pre of msg.previsualizaciones" [src]="pre" class="img-fluid" alt="Input">
+          </div>
+
+          <div class="soluciones-grid" *ngIf="msg.soluciones">
+            <div *ngFor="let sol of msg.soluciones; let i = index" class="reporte-card">
+              <h3>Ejercicio #{{ sol.exercise_id }}</h3>
+              <img *ngIf="msg.miniaturasInput" [src]="msg.miniaturasInput[i]" class="img-report" alt="Analizada" width="300px">
+              <p class="feedback">{{ sol.feedback }}</p>
+              <div class="steps">
+                <div *ngFor="let p of sol.steps" class="step">
+                  <span [class.correct]="p.is_correct">{{ p.is_correct ? '✓' : '✗' }} Paso {{ p.step_number }}</span>
+                  <code>{{ p.student_step }}</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+      <div *ngIf="loading" class="loader-neon">Analizando ejercicios...</div>
+    </div>
 
     <footer class="input-section">
       <div class="neon-input-bar">
-        <label for="fileInput" class="icon-button" title="Adjuntar imágenes">
-          <i class="fas fa-plus"></i>
-          <input type="file" id="fileInput" (change)="onFileSelected($event)" multiple hidden>
-        </label>
-        
-        <textarea 
-          [(ngModel)]="nuevoMensaje" 
-          placeholder="Pregunta algo..." 
-          rows="1">
-        </textarea>
-        
-        <button (click)="enviarMensaje()" class="icon-button send-btn">
-          <i class="fas fa-paper-plane"></i>
-        </button>
+        <label for="fileInput" class="icon-button"><i class="fas fa-plus"></i></label>
+        <input type="file" id="fileInput" (change)="onFileSelected($event)" multiple hidden>
+        <textarea [(ngModel)]="nuevoMensaje" placeholder="Pregunta algo..." rows="1"></textarea>
+        <button (click)="enviarMensaje()" class="icon-button send-btn"><i class="fas fa-paper-plane"></i></button>
       </div>
     </footer>
   </main>
