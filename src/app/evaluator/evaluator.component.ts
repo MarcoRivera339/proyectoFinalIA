@@ -10,49 +10,59 @@ import { EvaluadorService } from '../services/evaluador.service';
   templateUrl: './evaluator.component.html',
   styleUrls: ['./evaluator.component.css']
 })
-export class EvaluatorComponent {
+
+export class EvaluadorComponent {
   nuevoMensaje: string = '';
   imagenesSeleccionadas: File[] = [];
-  historial: any[] = []; 
+  historial: any[] = [];
   loading: boolean = false;
-  isDarkMode: boolean = false;
+  isDarkMode: boolean = true;
+  isSidebarOpen: boolean = true;
+  
+  chatsGuardados = [{ titulo: 'Ejercicio Matrices', id: 1 }];
 
   constructor(private evaluadorService: EvaluadorService) {}
 
-  toggleDarkMode(){
-    this.isDarkMode = !this.isDarkMode;
-  }
+  toggleSidebar() { this.isSidebarOpen = !this.isSidebarOpen; }
+  toggleDarkMode() { this.isDarkMode = !this.isDarkMode; }
 
   onFileSelected(event: any) {
     this.imagenesSeleccionadas = Array.from(event.target.files);
   }
 
-  enviarMensaje(){
+  async enviarMensaje() {
     if (this.imagenesSeleccionadas.length === 0 && !this.nuevoMensaje) return;
     this.loading = true;
-    this.historial.push({ 
-      emisor: 'usuario', 
-      texto: this.nuevoMensaje, 
-      cantImagenes: this.imagenesSeleccionadas.length });
+
+    // Generar miniaturas para visualización inmediata
+    const miniaturas = await Promise.all(this.imagenesSeleccionadas.map(file => {
+      return new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.readAsDataURL(file);
+      });
+    }));
+
+    this.historial.push({ emisor: 'usuario', texto: this.nuevoMensaje, previsualizaciones: miniaturas });
 
     this.evaluadorService.enviarAlChat(this.nuevoMensaje, this.imagenesSeleccionadas).subscribe({
       next: (res) => {
-        this.historial.push({
-          emisor: 'ia',
-          texto: res.evaluacion.general_feedback,
-          soluciones: res.evaluacion.exercises
+        this.historial.push({ 
+          emisor: 'ia', 
+          texto: res.evaluacion.general_feedback, 
+          soluciones: res.evaluacion.exercises,
+          miniaturasInput: miniaturas 
         });
         this.loading = false;
         this.limpiarInputs();
       },
-      error: () => { alert("Error de conexión"); this.loading = false; }
+      error: () => { alert("Error"); this.loading = false; }
     });
   }
 
-  limpiarInputs(){
+  limpiarInputs() {
     this.nuevoMensaje = '';
     this.imagenesSeleccionadas = [];
-    const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-    if (fileInput) fileInput.value = '';
+    (document.getElementById('fileInput') as HTMLInputElement).value = '';
   }
 }

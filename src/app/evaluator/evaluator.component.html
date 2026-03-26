@@ -1,63 +1,58 @@
-<div class="app-container" [class.dark-mode]="isDarkMode">
-  <button class="theme-btn" (click)="toggleDarkMode()">
-    <i [class]="isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
-  </button>
+<div class="app-layout" [class.dark-theme]="isDarkMode" [class.sidebar-closed]="!isSidebarOpen">
+  
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <button (click)="toggleSidebar()" class="icon-btn"><i class="fas fa-bars"></i></button>
+      <button class="new-chat"><i class="fas fa-plus"></i> <span>Nuevo Chat</span></button>
+    </div>
+    <div class="history">
+      <div class="history-item" *ngFor="let chat of chatsGuardados">
+        <i class="far fa-message"></i> {{ chat.titulo }}
+      </div>
+    </div>
+  </aside>
 
-  <main class="content-area">
-    <header class="minimal-header">
-      <h1>Tutor Inteligente</h1>
-      <p>Análisis Multimodal Activo</p>
+  <main class="main-content">
+    <header class="top-nav">
+      <button (click)="toggleSidebar()" *ngIf="!isSidebarOpen" class="icon-btn"><i class="fas fa-bars"></i></button>
+      <h2>Tutor Inteligente</h2>
+      <button (click)="toggleDarkMode()" class="theme-btn">
+        <i [class]="isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+      </button>
     </header>
 
-    <section class="chat-feed" #scrollContainer>
-      <div *ngFor="let msg of historial" [ngClass]="msg.emisor === 'usuario' ? 'user-entry' : 'ia-entry'">
-        <div class="message-content">
-          <p class="text">{{ msg.texto }}</p>
-          
+    <div class="chat-area">
+      <div *ngFor="let msg of historial" [ngClass]="msg.emisor === 'usuario' ? 'user-box' : 'ia-box'">
+        <div class="bubble">
+          <p>{{ msg.texto }}</p>
+          <div class="thumb-grid" *ngIf="msg.previsualizaciones && msg.emisor === 'usuario'">
+            <img *ngFor="let p of msg.previsualizaciones" [src]="p" class="mini">
+          </div>
+
           <div class="report-grid" *ngIf="msg.soluciones">
-            <article *ngFor="let sol of msg.soluciones" class="minimal-report">
-              <div class="report-top">
-                <span class="report-id">Reporte #{{ sol.exercise_id }}</span>
-                <span class="report-score">{{ sol.total_score }}/{{ sol.max_score }}</span>
-              </div>
-              
-              <div class="report-body">
-                <p class="general-feedback">{{ sol.feedback }}</p>
-                
-                <div class="steps-flow">
-                  <div *ngFor="let paso of sol.steps" class="step-card" [class.error-step]="!paso.is_correct">
-                    <div class="step-indicator">
-                      <i [class]="paso.is_correct ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
-                      <span>Paso {{ paso.step_number }}</span>
-                    </div>
-                    <code>{{ paso.student_step }}</code>
-                    <p class="step-hint">{{ paso.feedback }}</p>
-                  </div>
+            <div *ngFor="let sol of msg.soluciones; let i = index" class="report-card">
+              <h3>Reporte #{{ sol.exercise_id }}</h3>
+              <img *ngIf="msg.miniaturasInput" [src]="msg.miniaturasInput[i]" class="report-thumb">
+              <p><strong>Feedback:</strong> {{ sol.feedback }}</p>
+              <div class="steps">
+                <div *ngFor="let p of sol.steps" class="step">
+                  <span [class.ok]="p.is_correct">{{ p.is_correct ? '✓' : '✗' }} Paso {{ p.step_number }}</span>
+                  <code>{{ p.student_step }}</code>
                 </div>
               </div>
-            </article>
+            </div>
           </div>
         </div>
       </div>
-      <div *ngIf="loading" class="minimal-loader">Analizando datos...</div>
-    </section>
+    </div>
 
-    <footer class="input-section">
-      <div class="minimal-input-bar">
-        <label for="fileInput" class="action-icon" title="Adjuntar">
-          <i class="fas fa-paperclip"></i>
-          <input type="file" id="fileInput" (change)="onFileSelected($event)" multiple hidden>
-        </label>
-        
+    <div class="input-wrapper">
+      <div class="gemini-bar">
+        <label for="fileInput" class="icon-btn"><i class="fas fa-plus"></i></label>
+        <input type="file" id="fileInput" (change)="onFileSelected($event)" multiple hidden>
         <textarea [(ngModel)]="nuevoMensaje" placeholder="Pregunta algo..." rows="1" (keyup.enter)="enviarMensaje()"></textarea>
-        
-        <button (click)="enviarMensaje()" [disabled]="loading" class="action-icon send-btn">
-          <i class="fas fa-arrow-up"></i>
-        </button>
+        <button (click)="enviarMensaje()" class="icon-btn"><i class="fas fa-paper-plane"></i></button>
       </div>
-      <div class="file-counter" *ngIf="imagenesSeleccionadas.length > 0">
-        {{ imagenesSeleccionadas.length }} imágenes seleccionadas
-      </div>
-    </footer>
+    </div>
   </main>
 </div>

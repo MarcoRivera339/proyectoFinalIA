@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EvaluatorComponent } from './evaluator/evaluator.component';
+import { EvaluadorComponent } from './evaluator/evaluator.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, EvaluatorComponent],
+  imports: [CommonModule, EvaluadorComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })

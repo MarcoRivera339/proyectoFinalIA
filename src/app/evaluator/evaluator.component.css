@@ -1,83 +1,82 @@
-:host {
-  --bg-light: #ffffff;
-  --bg-dark: #131314;
-  --text-light: #1f1f1f;
-  --text-dark: #e3e3e3;
-  --accent: #1a73e8;
-  --border-light: #e0e0e0;
-  --border-dark: #3c4043;
+.app-layout { 
+  --bg: #ffffff; 
+  --side: #f0f4f9; 
+  --text: #1f1f1f; 
+  display: flex; 
+  height: 100vh; 
+  transition: 0.3s;
+ }
+.app-layout.dark-theme { 
+  --bg: #131314; 
+  --side: #1e1e20; 
+  --text: #e3e3e3; 
 }
 
-.app-container {
-  height: 100vh; background: var(--bg-light); color: var(--text-light);
-  display: flex; justify-content: center; transition: background 0.3s;
+.sidebar { 
+  width: 260px; 
+  background: var(--side); 
+  display: flex; 
+  flex-direction: column; 
+  transition: 0.3s; 
+  border-right: 1px solid #444; 
+}
+.sidebar-closed .sidebar { 
+  width: 0; 
+  transform: translateX(-100%); 
+  overflow: hidden; 
 }
 
-.app-container.dark-mode {
-  background: var(--bg-dark); color: var(--text-dark);
+.main-content { 
+  flex: 1; 
+  background: 
+  var(--bg); 
+  color: var(--text); 
+  display: flex; 
+  flex-direction: column; 
+}
+.chat-area { 
+  flex: 1; 
+  overflow-y: auto; 
+  padding: 40px 10%; 
 }
 
-.content-area {
-  width: 100%; max-width: 900px; display: flex; flex-direction: column; padding: 0 20px;
+.report-card { 
+  background: var(--side); 
+  border-radius: 12px; 
+  padding: 20px; 
+  margin-top: 20px; 
+  border: 1px solid #444; 
+}
+.report-thumb { 
+  max-width: 200px; 
+  border-radius: 8px; 
+  margin: 10px 0; 
+  display: block; 
 }
 
-/* Header */
-.minimal-header { padding: 40px 0 20px; border-bottom: 1px solid transparent; }
-.minimal-header h1 { font-size: 1.5rem; font-weight: 500; margin: 0; }
-.minimal-header p { font-size: 0.9rem; opacity: 0.6; }
-
-/* Chat Feed */
-.chat-feed { flex: 1; overflow-y: auto; padding: 20px 0; scroll-behavior: smooth; }
-
-.user-entry { margin-bottom: 30px; display: flex; justify-content: flex-end; }
-.user-entry .message-content { background: #f0f4f9; padding: 12px 20px; border-radius: 20px; max-width: 80%; }
-.dark-mode .user-entry .message-content { background: #2b2b2b; }
-
-.ia-entry { margin-bottom: 40px; }
-
-/* Tarjetas de Reporte Minimalistas */
-.minimal-report {
-  margin-top: 20px; border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden;
+.gemini-bar { 
+  display: flex; 
+  align-items: center; 
+  background: var(--side); 
+  border-radius: 30px; 
+  padding: 10px 20px; 
+  margin: 20px auto; 
+  width: 80%; 
 }
-.dark-mode .minimal-report { border-color: var(--border-dark); }
-
-.report-top {
-  padding: 12px 20px; background: rgba(0,0,0,0.02); display: flex; justify-content: space-between;
-  border-bottom: 1px solid var(--border-light); font-weight: 500;
-}
-.dark-mode .report-top { border-color: var(--border-dark); }
-
-.step-card {
-  padding: 15px 20px; border-bottom: 1px solid var(--border-light);
-}
-.dark-mode .step-card { border-color: var(--border-dark); }
-
-.error-step { border-left: 4px solid #d93025; }
-
-code {
-  display: block; background: #f8f9fa; padding: 10px; border-radius: 6px; 
-  font-family: 'Roboto Mono', monospace; margin: 10px 0; font-size: 0.9rem;
-}
-.dark-mode code { background: #1e1e1e; }
-
-/* Barra de Entrada */
-.input-section { padding: 20px 0 40px; }
-
-.minimal-input-bar {
-  display: flex; align-items: center; background: #f0f4f9; border-radius: 28px; padding: 8px 16px; gap: 12px;
-}
-.dark-mode .minimal-input-bar { background: #28292a; }
-
-textarea {
-  flex: 1; border: none; background: transparent; color: inherit; outline: none; resize: none; font-size: 1rem; padding: 8px 0;
+.auto-textarea { 
+  flex: 1; 
+  border: none; 
+  background: transparent; 
+  color: inherit; 
+  outline: none; 
+  font-size: 1.1rem; 
 }
 
-.action-icon {
-  background: none; border: none; color: inherit; font-size: 1.2rem; cursor: pointer; opacity: 0.7; transition: 0.2s;
-}
-.action-icon:hover { opacity: 1; color: var(--accent); }
-
-.theme-btn {
-  position: fixed; top: 20px; right: 20px; background: none; border: 1px solid var(--border-light);
-  width: 40px; height: 40px; border-radius: 50%; cursor: pointer; color: inherit;
+.icon-btn { 
+  background: none; 
+  border: none; 
+  color: inherit; 
+  font-size: 1.2rem; 
+  cursor: pointer; 
+  padding: 10px; 
 }
