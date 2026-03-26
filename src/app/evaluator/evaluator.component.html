@@ -1,58 +1,49 @@
-<div class="app-layout" [class.dark-theme]="isDarkMode" [class.sidebar-closed]="!isSidebarOpen">
-  
+<div class="app-layout">
   <aside class="sidebar">
     <div class="sidebar-header">
-      <button (click)="toggleSidebar()" class="icon-btn"><i class="fas fa-bars"></i></button>
-      <button class="new-chat"><i class="fas fa-plus"></i> <span>Nuevo Chat</span></button>
+      <button class="icon-button"><i class="fas fa-bars"></i></button>
+      <button class="new-chat-btn" (click)="nuevoChat()">
+        <i class="fas fa-plus"></i>
+        <span>Nuevo Chat</span>
+      </button>
     </div>
-    <div class="history">
+
+    <div class="chat-history-list">
       <div class="history-item" *ngFor="let chat of chatsGuardados">
-        <i class="far fa-message"></i> {{ chat.titulo }}
+        <i class="far fa-comment-alt"></i>
+        <span>{{ chat.titulo }}</span>
       </div>
     </div>
   </aside>
 
   <main class="main-content">
     <header class="top-nav">
-      <button (click)="toggleSidebar()" *ngIf="!isSidebarOpen" class="icon-btn"><i class="fas fa-bars"></i></button>
-      <h2>Tutor Inteligente</h2>
-      <button (click)="toggleDarkMode()" class="theme-btn">
-        <i [class]="isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+      <h1>Tutor Inteligente</h1>
+      <button class="theme-btn" (click)="toggleDarkMode()">
+        <i class="fas fa-moon"></i>
       </button>
     </header>
 
-    <div class="chat-area">
-      <div *ngFor="let msg of historial" [ngClass]="msg.emisor === 'usuario' ? 'user-box' : 'ia-box'">
-        <div class="bubble">
-          <p>{{ msg.texto }}</p>
-          <div class="thumb-grid" *ngIf="msg.previsualizaciones && msg.emisor === 'usuario'">
-            <img *ngFor="let p of msg.previsualizaciones" [src]="p" class="mini">
-          </div>
-
-          <div class="report-grid" *ngIf="msg.soluciones">
-            <div *ngFor="let sol of msg.soluciones; let i = index" class="report-card">
-              <h3>Reporte #{{ sol.exercise_id }}</h3>
-              <img *ngIf="msg.miniaturasInput" [src]="msg.miniaturasInput[i]" class="report-thumb">
-              <p><strong>Feedback:</strong> {{ sol.feedback }}</p>
-              <div class="steps">
-                <div *ngFor="let p of sol.steps" class="step">
-                  <span [class.ok]="p.is_correct">{{ p.is_correct ? '✓' : '✗' }} Paso {{ p.step_number }}</span>
-                  <code>{{ p.student_step }}</code>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div class="chat-window">
       </div>
-    </div>
 
-    <div class="input-wrapper">
-      <div class="gemini-bar">
-        <label for="fileInput" class="icon-btn"><i class="fas fa-plus"></i></label>
-        <input type="file" id="fileInput" (change)="onFileSelected($event)" multiple hidden>
-        <textarea [(ngModel)]="nuevoMensaje" placeholder="Pregunta algo..." rows="1" (keyup.enter)="enviarMensaje()"></textarea>
-        <button (click)="enviarMensaje()" class="icon-btn"><i class="fas fa-paper-plane"></i></button>
+    <footer class="input-section">
+      <div class="neon-input-bar">
+        <label for="fileInput" class="icon-button" title="Adjuntar imágenes">
+          <i class="fas fa-plus"></i>
+          <input type="file" id="fileInput" (change)="onFileSelected($event)" multiple hidden>
+        </label>
+        
+        <textarea 
+          [(ngModel)]="nuevoMensaje" 
+          placeholder="Pregunta algo..." 
+          rows="1">
+        </textarea>
+        
+        <button (click)="enviarMensaje()" class="icon-button send-btn">
+          <i class="fas fa-paper-plane"></i>
+        </button>
       </div>
-    </div>
+    </footer>
   </main>
 </div>

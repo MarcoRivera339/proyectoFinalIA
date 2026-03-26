@@ -1,82 +1,182 @@
-.app-layout { 
-  --bg: #ffffff; 
-  --side: #f0f4f9; 
-  --text: #1f1f1f; 
-  display: flex; 
-  height: 100vh; 
-  transition: 0.3s;
- }
-.app-layout.dark-theme { 
-  --bg: #131314; 
-  --side: #1e1e20; 
-  --text: #e3e3e3; 
+/* --- Variables y Reset General --- */
+:host {
+  --bg-main: #131314;       /* Fondo de la aplicación (Casi negro) */
+  --bg-card: #1e1e20;       /* Fondo de la tarjeta y sidebar (Gris oscuro) */
+  --text-main: #e3e3e3;     /* Texto principal (Blanco apagado) */
+  --neon-blue: #0b57d0;     /* Azul Neón base */
+  --neon-glow: #0b57d080;   /* Brillo neón con opacidad */
+  --border-neon: #3373cd;   /* Borde neón más claro */
 }
 
-.sidebar { 
-  width: 260px; 
-  background: var(--side); 
-  display: flex; 
-  flex-direction: column; 
-  transition: 0.3s; 
-  border-right: 1px solid #444; 
-}
-.sidebar-closed .sidebar { 
-  width: 0; 
-  transform: translateX(-100%); 
-  overflow: hidden; 
+/* Estilo para el contenedor que engloba todo */
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-main);
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: var(--text-main);
+  overflow: hidden;
 }
 
-.main-content { 
-  flex: 1; 
-  background: 
-  var(--bg); 
-  color: var(--text); 
-  display: flex; 
-  flex-direction: column; 
-}
-.chat-area { 
-  flex: 1; 
-  overflow-y: auto; 
-  padding: 40px 10%; 
+/* --- SIDEBAR IZQUIERDO --- */
+.sidebar {
+  width: 260px;
+  background-color: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  border-right: 1px solid #3c4043;
 }
 
-.report-card { 
-  background: var(--side); 
-  border-radius: 12px; 
-  padding: 20px; 
-  margin-top: 20px; 
-  border: 1px solid #444; 
-}
-.report-thumb { 
-  max-width: 200px; 
-  border-radius: 8px; 
-  margin: 10px 0; 
-  display: block; 
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 30px;
 }
 
-.gemini-bar { 
-  display: flex; 
-  align-items: center; 
-  background: var(--side); 
-  border-radius: 30px; 
-  padding: 10px 20px; 
-  margin: 20px auto; 
-  width: 80%; 
-}
-.auto-textarea { 
-  flex: 1; 
-  border: none; 
-  background: transparent; 
-  color: inherit; 
-  outline: none; 
-  font-size: 1.1rem; 
+/* Botón "Nuevo Chat" con el degradado azul de la imagen */
+.new-chat-btn {
+  flex: 1;
+  background: linear-gradient(135deg, #2a73e8 0%, #1a57b0 100%);
+  color: white;
+  border: none;
+  border-radius: 24px;
+  padding: 12px 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
 }
 
-.icon-btn { 
-  background: none; 
-  border: none; 
-  color: inherit; 
-  font-size: 1.2rem; 
-  cursor: pointer; 
-  padding: 10px; 
+.new-chat-btn:hover {
+  box-shadow: 0 0 12px var(--neon-glow);
+}
+
+.chat-history-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Ítem del historial con el brillo azul al hacer hover */
+.history-item {
+  padding: 10px 15px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #c4c7c5;
+}
+
+.history-item:hover, .history-item.active {
+  background-color: rgba(11, 87, 208, 0.1);
+  color: #a1c2fa;
+  box-shadow: inset 0 0 8px rgba(11, 87, 208, 0.2);
+}
+
+.history-item i {
+  color: var(--neon-blue);
+  opacity: 0.8;
+}
+
+/* --- CONTENIDO PRINCIPAL --- */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.top-nav {
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Título con la tipografía serif de la imagen */
+.top-nav h1 {
+  font-family: 'Georgia', serif; 
+  font-size: 1.6rem;
+  font-weight: normal;
+  color: white;
+}
+
+.theme-btn {
+  background-color: #3c4043;
+  color: var(--neon-blue);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px var(--neon-glow);
+}
+
+/* --- BARRA DE ENTRADA (Estilo Píldora Neón) --- */
+.input-section {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 40px;
+  background: linear-gradient(0deg, var(--bg-main) 70%, transparent 100%);
+}
+
+.neon-input-bar {
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-neon);
+  border-radius: 32px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 0 20px -2px var(--neon-glow), 
+              0 0 6px -1px var(--neon-glow) inset;
+  transition: box-shadow 0.3s;
+}
+
+.neon-input-bar:focus-within {
+  box-shadow: 0 0 25px -1px var(--neon-blue), 
+              0 0 10px -2px var(--neon-blue) inset;
+}
+
+textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.05rem;
+  padding: 12px 0;
+  resize: none;
+  outline: none;
+}
+
+textarea::placeholder {
+  color: #7d7d7d;
+  font-family: 'Consolas', 'Monaco', monospace; /* Estilo terminal para el placeholder */
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  color: var(--neon-blue);
+  font-size: 1.4rem;
+  cursor: pointer;
+  opacity: 0.9;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.icon-button:hover {
+  opacity: 1;
+  color: #4a8cf5;
 }
