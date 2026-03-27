@@ -10,66 +10,75 @@ import { EvaluadorService } from '../services/evaluador.service';
   templateUrl: './evaluator.component.html',
   styleUrls: ['./evaluator.component.css']
 })
-
 export class EvaluadorComponent {
   nuevoMensaje: string = '';
-  imagenesSeleccionadas: File[] = [];
+  imagenesSeleccionadas: File[] = []; // Aseguramos tipo File[]
   historial: any[] = [];
   loading: boolean = false;
-  isDarkMode: boolean = true;
-  isSidebarOpen: boolean = true;
-  
-  chatsGuardados = [{ titulo: 'Ejercicio Matrices', id: 1 }];
+  archivosCargados: boolean = false;
 
   constructor(private evaluadorService: EvaluadorService) {}
 
-  nuevoChat() {
-    this.historial = []; // Limpia el chat actual
-    this.nuevoMensaje = ''; // Limpia el texto de entrada
-    this.imagenesSeleccionadas = []; // Limpia las imágenes
-    console.log("Iniciando nueva sesión de estudio...");
+  onFileSelected(event: any) {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      this.imagenesSeleccionadas = Array.from(files); // Conversión explícita
+      this.archivosCargados = true;
+      console.log("Archivos listos para enviar:", this.imagenesSeleccionadas.length);
+    }
   }
 
-  toggleSidebar() { this.isSidebarOpen = !this.isSidebarOpen; }
-  toggleDarkMode() { this.isDarkMode = !this.isDarkMode; }
-
-  onFileSelected(event: any) {
-    this.imagenesSeleccionadas = Array.from(event.target.files);
+  nuevoChat() {
+    this.historial = [];
+    this.limpiarInputs();
   }
 
   async enviarMensaje() {
-    if (this.imagenesSeleccionadas.length === 0 && !this.nuevoMensaje) return;
+    if (this.imagenesSeleccionadas.length === 0) {
+      alert("Por favor, adjunta al menos una imagen.");
+      return;
+    }
+    
     this.loading = true;
+    this.archivosCargados = false;
 
-    // Generar miniaturas para visualización inmediata
-    const miniaturas = await Promise.all(this.imagenesSeleccionadas.map(file => {
+    // Generar miniaturas para el chat
+    const miniaturas = await Promise.all(this.imagenesSeleccionadas.map((file: File) => {
       return new Promise<string>((resolve) => {
         const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.onload = (e: any) => resolve(e.target.result);
         reader.readAsDataURL(file);
       });
     }));
 
-    this.historial.push({ emisor: 'usuario', texto: this.nuevoMensaje, previsualizaciones: miniaturas });
+    const promptTxt = this.nuevoMensaje;
+    this.historial.push({ emisor: 'usuario', texto: promptTxt, previsualizaciones: miniaturas });
 
-    this.evaluadorService.enviarAlChat(this.nuevoMensaje, this.imagenesSeleccionadas).subscribe({
-      next: (res) => {
-        this.historial.push({ 
-          emisor: 'ia', 
-          texto: res.evaluacion.general_feedback, 
+    this.evaluadorService.enviarAlChat(promptTxt, this.imagenesSeleccionadas).subscribe({
+      next: (res: any) => {
+        this.historial.push({
+          emisor: 'ia',
+          texto: res.evaluacion.general_feedback,
           soluciones: res.evaluacion.exercises,
-          miniaturasInput: miniaturas 
+          notaGlobal: res.evaluacion.global_total_score,
+          notaMaxGlobal: res.evaluacion.global_max_score
         });
         this.loading = false;
         this.limpiarInputs();
       },
-      error: () => { alert("Error"); this.loading = false; }
+      error: (err: any) => {
+        console.error("Error en peticion:", err);
+        this.loading = false;
+        alert("Error 400: El servidor no reconoció los datos. Revisa la consola.");
+      }
     });
   }
 
   limpiarInputs() {
     this.nuevoMensaje = '';
     this.imagenesSeleccionadas = [];
-    (document.getElementById('fileInput') as HTMLInputElement).value = '';
+    this.archivosCargados = false;
+    const input = document.getElementById('fileInput') as HTMLInputElement;
+    if (input) input.value = '';
   }
 }

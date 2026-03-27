@@ -2,102 +2,89 @@ const express = require('express');
 const { OpenAI } = require("openai");
 const multer = require('multer');
 const cors = require('cors');
-const path = require('path');
-
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
-app.use(express.json()); 
+app.use(express.json({ limit: '50mb' }));
 
-const upload = multer({storage: multer.memoryStorage()}); 
-
-const openai = new OpenAI({
-    apiKey: process.env.PROYECT_API_KEY
-});
+const upload = multer({ storage: multer.memoryStorage() });
+const openai = new OpenAI({ apiKey: process.env.PROYECT_API_KEY });
 
 const systemPrompt = `
-You are an expert Autonomous Grading Agent specialized in Mathematics and Linear Algebra.
-Your goal is to analyze handwritten solutions from images, compare them against canonical mathematical procedures, and generate a structured pedagogical report.
+You are a Strict and Precise Math Professor. 
+Your goal is to perform a Deep Audit of the student's work.
 
-### EVALUATION LOGIC:
-1. **Transcription**: Accurately transcribe the matrices, variables, and equations shown in the image.
-2. **Step-by-Step Analysis**: Break down the student's work into logical milestones (e.g., Subtraction, Multiplication, Squaring).
-3. **Error Identification**: Flag specific errors such as Arithmetic (calculation mistakes), Conceptual (wrong formula or operation order), or Transcription (copying numbers incorrectly).
-4. **Scoring**: Assign partial credit for the procedure and a final score for the result. Use a scale of 0 to 5 points.
+### CRITICAL INSTRUCTIONS:
+1. INTERNAL RESOLUTION: Before looking at the student's image, solve the exercise yourself. 
+2. COMPARISON: Compare your correct result with the student's result. If they differ, find exactly which step has the error (calculation, sign, or concept).
+3. NO FALSE POSITIVES: Do not say "Correct" if the result is wrong. Be honest and pedagogical.
+4. DETAIL: In 'full_resolution', show the perfect path. In 'steps_analysis', point out the specific error found in the image.
 
-### OUTPUT FORMAT:
-You MUST respond strictly in a valid JSON object with the following structure:
+### OUTPUT FORMAT (JSON):
 {
-  "total_score": number,
-  "max_score": 5,
-  "general_feedback": "A brief encouraging summary of the student's performance in Spanish.",
+  "global_total_score": number,
+  "global_max_score": number,
+  "general_feedback": "Resumen crítico en ESPAÑOL",
   "exercises": [
     {
       "exercise_id": number,
-      "student_answer": "The final result written by the student",
-      "expected_answer": "The correct mathematical result",
-      "procedure_score": number,
+      "exercise_title": "string",
+      "full_resolution": "Resolución Maestra Paso a Paso en ESPAÑOL",
       "total_score": number,
-      "feedback": "Detailed explanation of the errors found in Spanish.",
-      "steps": [
+      "max_score": number,
+      "feedback": "Explicación de por qué falló en ESPAÑOL",
+      "steps_analysis": [
         { 
           "step_number": number, 
-          "student_step": "The specific equation or calculation detected", 
+          "description": "Análisis del paso", 
+          "student_work": "Lo que escribió el alumno",
           "is_correct": boolean, 
-          "feedback": "Brief feedback for this specific step in Spanish" 
+          "correction": "Qué debió escribir el alumno" 
         }
       ]
     }
   ]
 }
-
-### CONSTRAINTS:
-- All feedback and explanations MUST be written in Spanish to ensure the student understands.
-- Do not include Markdown formatting (like \`\`\`json) in the response.
-- If multiple images are provided, analyze them as separate exercises within the "exercises" array.
+...
+### FORMATTING RULES:
+1. For matrices, DO NOT use LaTeX commands like \\begin{pmatrix}.
+2. Use a visual text format instead, for example:
+   | 2  0  0 |
+   | 4  8  0 |
+   | -4 -7 2 |
+3. Ensure all qualitative feedback is in SPANISH.
+...
 `;
-
 app.post('/evaluar-chat', upload.array('imagenes', 10), async (req, res) => {
+    console.log("Archivos recibidos:", req.files?.length); // Ver en terminal
     try {
         const { instrucciones } = req.body;
         const archivos = req.files;
 
-        if (!archivos || archivos.length === 0){
-            return res.status(400).json({error: "Error en la carga de imágenes"});
+        if (!archivos || archivos.length === 0) {
+            return res.status(400).json({ error: "No se subieron imagenes" });
         }
 
         const contenidoImagenes = archivos.map(file => ({
             type: "image_url",
-            image_url: {
-                url: `data:image/jpeg;base64,${file.buffer.toString("base64")}`,
-                detail: "low"
-            }
-        }))
+            image_url: { url: `data:image/jpeg;base64,${file.buffer.toString("base64")}` }
+        }));
 
         const response = await openai.chat.completions.create({
-            model: "gpt-4o", // Mantengo el que tenías
+            model: "gpt-4o",
             messages: [
                 { role: "system", content: systemPrompt },
-                {
-                    role: "user",
-                    content: [
-                        { type: "text", text: instrucciones || "Analiza estos ejercicios"},
-                        ...contenidoImagenes
-                    ]
-                }
+                { role: "user", content: [{ type: "text", text: instrucciones || "Evalua" }, ...contenidoImagenes] }
             ],
-            temperature: 0,
             response_format: { type: "json_object" }
         });
 
         res.json({ evaluacion: JSON.parse(response.choices[0].message.content) });
     } catch (error) {
-        console.error("Error en OpenAI:", error);
-        res.status(500).json({ error: "Error procesando la evaluación" });
+        console.error("Error OpenAI:", error);
+        res.status(500).json({ error: "Error interno" });
     }
 });
 
-app.listen(3000, () => {
-    console.log("✅ Servidor activo en http://localhost:3000");
-});
+app.listen(3000, () => console.log("🚀 Servidor en puerto 3000"));
