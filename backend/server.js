@@ -72,7 +72,7 @@ app.post('/evaluar-chat', upload.array('imagenes', 10), async (req, res) => {
         }));
 
         const response = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: "gpt-5.2",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: [{ type: "text", text: instrucciones || "Evalua" }, ...contenidoImagenes] }
